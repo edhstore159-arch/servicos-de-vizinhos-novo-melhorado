@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Landing from './pages/Landing';
 import NewHome from './pages/NewHome';
@@ -11,6 +11,10 @@ import Perfil from './pages/Perfil';
 import Creditos from './pages/Creditos';
 import Abonamento from './pages/Abonamento';
 import Assinatura from './pages/Assinatura';
+import PublicarDemanda from './pages/PublicarDemanda';
+import EditarPerfil from './pages/EditarPerfil';
+import Ofertantes from './pages/Ofertantes';
+import BottomNav from './components/BottomNav';
 import AdminLayout from './layouts/AdminLayout';
 import AdminDashboard from './pages/admin/Dashboard';
 import Orcamentos from './pages/admin/Orcamentos';
@@ -23,6 +27,16 @@ const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
   if (loading) return null;
   return isAuthenticated ? children : <Navigate to="/" replace />;
+};
+
+const ConditionalBottomNav = () => {
+  const { isAuthenticated } = useAuth();
+  const location = useLocation();
+  const path = location.pathname;
+  const hideOn = ['/', '/landing'];
+  const isAdmin = path.startsWith('/admin');
+  if (!isAuthenticated || isAdmin || hideOn.includes(path)) return null;
+  return <BottomNav />;
 };
 
 const PublicRoute = ({ children }) => {
@@ -44,6 +58,9 @@ function AppRoutes() {
       <Route path="/creditos" element={<ProtectedRoute><Creditos /></ProtectedRoute>} />
       <Route path="/abonamento" element={<ProtectedRoute><Abonamento /></ProtectedRoute>} />
       <Route path="/assinatura" element={<ProtectedRoute><Assinatura /></ProtectedRoute>} />
+      <Route path="/publicar" element={<ProtectedRoute><PublicarDemanda /></ProtectedRoute>} />
+      <Route path="/editar-perfil" element={<ProtectedRoute><EditarPerfil /></ProtectedRoute>} />
+      <Route path="/ofertantes" element={<ProtectedRoute><Ofertantes /></ProtectedRoute>} />
       
       {/* Admin Routes */}
       <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
@@ -73,6 +90,7 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         <AppRoutes />
+        <ConditionalBottomNav />
         <Toaster />
       </AuthProvider>
     </BrowserRouter>

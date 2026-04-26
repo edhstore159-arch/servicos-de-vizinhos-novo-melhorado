@@ -15,6 +15,15 @@ Construir uma aplicação chamada "servivizinhos" inspirada no allovoisins.com -
 - DB: MongoDB local (`MONGO_URL`)
 - Google Maps API: `AIzaSyDUxe-HLztnRiQ8mFew15NCs2TWBUJ8Jl0`
 
+## O que foi implementado (Fev 2026)
+
+### Páginas adaptadas do .zip de referência
+- **PublicarDemanda (/publicar):** Formulário multi-campo (descrição, fotos, vídeo, endereço, orçamento, categoria) com upload local
+- **EditarPerfil (/editar-perfil):** Edição com geolocalização + foto, salva via PUT /api/users/me
+- **Ofertantes (/ofertantes):** Lista de prestadores com busca, filtros por categoria e CTAs (Contatar/Ligar)
+- **BottomNav (mobile):** Navegação inferior estilo app nativo, oculta em desktop e em /admin
+- **render.yaml + DEPLOY_RENDER.md:** Blueprint pronto + guia passo-a-passo em PT-BR para hospedar no Render
+
 ## O que foi implementado (Abril 2026)
 
 ### Autenticação Real (JWT)
