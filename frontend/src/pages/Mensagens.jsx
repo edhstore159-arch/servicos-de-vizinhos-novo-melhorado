@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 import { Input } from '../components/ui/input';
@@ -46,6 +47,8 @@ const mockConversations = [
 
 const Mensagens = () => {
   const { user } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [selectedConvId, setSelectedConvId] = useState(null);
   const [message, setMessage] = useState('');
   const [filter, setFilter] = useState('todas');
@@ -68,6 +71,54 @@ const Mensagens = () => {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [selectedConvId, conv?.messages?.length]);
+
+  // Auto-create or select a conversation when arriving with query params
+  // e.g. /mensagens?userId=abc&userName=João&userAvatar=...&service=...
+  useEffect(() => {
+    const userId = searchParams.get('userId');
+    const userName = searchParams.get('userName');
+    if (!userId || !userName) return;
+
+    const userAvatar = searchParams.get('userAvatar') || '';
+    const service = searchParams.get('service') || 'Novo contato';
+    const convId = `auto-${userId}`;
+
+    setConversations(prev => {
+      const existing = prev.find(c => c.id === convId || c.name === userName);
+      if (existing) {
+        setSelectedConvId(existing.id);
+        return prev;
+      }
+      const newConv = {
+        id: convId,
+        name: userName,
+        avatar: userAvatar,
+        rating: 0,
+        reviewCount: 0,
+        date: new Date().toLocaleDateString('pt-BR'),
+        service,
+        lastMessage: 'Inicie a conversa',
+        unread: false,
+        status: 'active',
+        messages: [
+          {
+            id: `m-${Date.now()}`,
+            type: 'system',
+            text: 'Pedido público',
+            detail: service,
+            time: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+            date: new Date().toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }),
+            fromMe: false,
+          },
+        ],
+      };
+      setSelectedConvId(convId);
+      return [newConv, ...prev];
+    });
+
+    // Clean up URL so reload doesn't recreate the conversation again
+    setSearchParams({}, { replace: true });
+  }, [searchParams, setSearchParams]);
 
   const showToast = (msg) => {
     setActionToast(msg);

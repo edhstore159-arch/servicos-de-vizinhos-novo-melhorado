@@ -285,9 +285,14 @@ const Home = () => {
   };
 
   const handleRespond = (post) => {
-    setReplyTarget(post);
-    setReplyText('');
-    setShowReplyModal(true);
+    // Redirect directly to the chat with the post author preselected
+    const params = new URLSearchParams({
+      userId: post.id,
+      userName: post.userName,
+      userAvatar: post.userAvatar || '',
+      service: (post.description || '').slice(0, 80),
+    });
+    navigate(`/mensagens?${params.toString()}`);
   };
 
   const handleSendReply = () => {
