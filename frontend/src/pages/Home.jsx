@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Header from '../components/Header';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
@@ -196,6 +196,28 @@ const Home = () => {
   const videoInputRef = useRef(null);
   const [postVideos, setPostVideos] = useState([]);
 
+  // Load user-published posts from localStorage and merge with mock initial posts
+  useEffect(() => {
+    const loadPosts = () => {
+      try {
+        const stored = JSON.parse(localStorage.getItem('userPosts') || '[]');
+        // user posts first (newest), then default mocked posts
+        setPosts([...stored, ...initialPosts]);
+      } catch {
+        setPosts(initialPosts);
+      }
+    };
+    loadPosts();
+    // Re-load when user returns to this tab (e.g., navigating back from /publicar)
+    const onFocus = () => loadPosts();
+    window.addEventListener('focus', onFocus);
+    window.addEventListener('storage', onFocus);
+    return () => {
+      window.removeEventListener('focus', onFocus);
+      window.removeEventListener('storage', onFocus);
+    };
+  }, []);
+
   const handlePhotoUpload = (e, index) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -247,10 +269,19 @@ const Home = () => {
       recommends: 0,
       responses: 0
     };
+    // Persist to localStorage so PublicarDemanda and Feed share the same source
+    try {
+      const stored = JSON.parse(localStorage.getItem('userPosts') || '[]');
+      localStorage.setItem('userPosts', JSON.stringify([newPost, ...stored]));
+    } catch {
+      localStorage.setItem('userPosts', JSON.stringify([newPost]));
+    }
     setPosts(prev => [newPost, ...prev]);
     setPostText('');
     setPostPhotos([]);
     setPostVideos([]);
+    setRecommendedToast('Pedido publicado com sucesso!');
+    setTimeout(() => setRecommendedToast(''), 2500);
   };
 
   const handleRespond = (post) => {
