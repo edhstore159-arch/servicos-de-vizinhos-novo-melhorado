@@ -132,7 +132,16 @@ const NewHome = () => {
       setShowLogin(false);
       navigate('/feed');
     } catch (err) {
-      setError(err.response?.data?.detail || 'Email ou senha incorretos');
+      // Provide specific feedback based on the error type
+      if (err.response?.data?.detail) {
+        setError(err.response.data.detail);
+      } else if (err.code === 'ERR_NETWORK' || err.message === 'Network Error') {
+        setError('Não foi possível conectar ao servidor. Verifique sua conexão ou a configuração do backend.');
+      } else if (err.response?.status === 0 || err.message?.includes('CORS')) {
+        setError('Erro de CORS: o servidor não está autorizando este domínio.');
+      } else {
+        setError('Email ou senha incorretos');
+      }
     } finally {
       setIsLoading(false);
     }
