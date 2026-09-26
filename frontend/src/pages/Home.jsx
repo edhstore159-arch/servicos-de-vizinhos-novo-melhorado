@@ -397,8 +397,8 @@ const Home = () => {
                 ))}
                 {posts.length === 0 && (
                   <Card className="p-8 text-center">
-                    <p className="text-gray-500">Nenhuma demanda encontrada</p>
-                    <p className="text-sm text-gray-400 mt-2">Seja o primeiro a publicar!</p>
+                    <p className="text-gray-500 animate-pulse">Carregando as propostas de emprego...</p>
+                    <p className="text-sm text-gray-400 mt-2">Aguarde enquanto buscamos as oportunidades</p>
                   </Card>
                 )}
               </div>
