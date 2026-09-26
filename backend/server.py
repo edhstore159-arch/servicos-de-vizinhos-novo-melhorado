@@ -9,16 +9,27 @@ from pathlib import Path
 from datetime import datetime
 from typing import Optional, List
 
-# Import routers
-from routers import auth, users, demands, messages, reviews, categories
-
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
 # MongoDB connection
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+mongo_url = os.environ.get('MONGO_URL')
+if not mongo_url:
+    raise RuntimeError(
+        "MONGO_URL environment variable is not set. "
+        "Please configure it in Render dashboard with your MongoDB Atlas connection string: "
+        "mongodb+srv://username:password@cluster.mongodb.net/servivizinhos?retryWrites=true&w=majority"
+    )
+
+try:
+    client = AsyncIOMotorClient(mongo_url, serverSelectionTimeoutMS=5000)
+    # Test connection
+    client.admin.command('ping')
+    db = client[os.environ.get('DB_NAME', 'servivizinhos')]
+    logging.info("MongoDB connection successful")
+except Exception as e:
+    logging.error(f"MongoDB connection failed: {e}")
+    raise RuntimeError(f"Failed to connect to MongoDB: {e}")
 
 # Create the main app
 app = FastAPI(title="AlloVoisins Clone API")
@@ -30,6 +41,9 @@ api_router = APIRouter(prefix="/api")
 @api_router.get("/")
 async def root():
     return {"message": "AlloVoisins Clone API is running", "version": "1.0.0"}
+
+# Import routers AFTER db is initialized to avoid circular imports
+from routers import auth, users, demands, messages, reviews, categories
 
 # Include routers
 api_router.include_router(auth.router, prefix="/auth", tags=["auth"])
